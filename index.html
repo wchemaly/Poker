@@ -3,123 +3,218 @@
 <head>
   <meta charset="UTF-8">
   <title>Card Counting Trainer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    body { font-family: sans-serif; margin: 20px; }
-    #container { max-width: 400px; margin: auto; }
+    :root {
+      --bg: #f4f4f9;
+      --card-bg: #ffffff;
+      --primary: #3b82f6;
+      --text: #1f2937;
+      --shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      background: var(--primary);
+      color: #fff;
+      text-align: center;
+      padding: 1rem;
+      box-shadow: var(--shadow);
+    }
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    select, input, button {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    button {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background .2s;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    #drill {
+      width: 100%;
+      max-width: 600px;
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      display: grid;
+      grid-template-rows: auto 1fr auto auto;
+      gap: 1.5rem;
+    }
+    #card-area {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      font-size: 2rem;
+    }
     .hidden { display: none; }
-    .card { font-size: 2em; margin: 5px; }
-    #flash { animation: flash 0.5s infinite alternate; }
-    @keyframes flash { from { background: white; } to { background: #eee; } }
+    .timer {
+      font-size: 0.9rem;
+      text-align: right;
+      color: #6b7280;
+    }
+    .feedback {
+      min-height: 1.2rem;
+      font-weight: 600;
+    }
+    .flash {
+      animation: flash 0.5s alternate infinite;
+    }
+    @keyframes flash {
+      from { background: var(--card-bg); }
+      to { background: #fde68a; }
+    }
   </style>
 </head>
 <body>
-  <div id="container">
-    <select id="levelSelect">
-      <option value="1">Level 1</option>
-      <option value="2">Level 2</option>
-      <option value="3">Level 3</option>
-      <option value="4">Level 4</option>
-      <option value="5">Level 5</option>
-      <option value="6">Level 6</option>
-      <option value="7">Level 7</option>
-    </select>
-    <button id="startBtn">Start</button>
-
-    <div id="level1" class="hidden">
-      <div id="card1" class="card"></div>
-      <input id="input1" placeholder="Count value" />
-      <button onclick="check1()">Submit</button>
-      <div id="fb1"></div>
+  <header><h1>Card Counting Trainer</h1></header>
+  <main>
+    <div class="controls">
+      <select id="levelSelect">
+        <option value="1">Level 1</option>
+        <option value="2">Level 2</option>
+        <option value="3">Level 3</option>
+        <option value="4">Level 4</option>
+        <option value="5">Level 5</option>
+        <option value="6">Level 6</option>
+        <option value="7">Level 7</option>
+      </select>
+      <button id="startBtn">Start</button>
     </div>
-
-    <div id="level2" class="hidden">
-      <div id="cards2"></div>
-      <input id="input2" placeholder="Net count" />
-      <button onclick="check2()">Submit</button>
-      <div id="fb2"></div>
+    <div id="drill">
+      <div class="timer hidden" id="timer"></div>
+      <div id="card-area"></div>
+      <div class="input-group">
+        <input id="input" type="text" placeholder="Enter answer">
+        <button id="submitBtn">Submit</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
     </div>
-
-    <div id="level3" class="hidden">
-      <div id="cards3"></div>
-      <input id="input3" placeholder="Final count" />
-      <button onclick="check3()">Submit</button>
-      <div id="fb3"></div>
-    </div>
-
-    <div id="level4" class="hidden">
-      <div id="timer4">Time: 0s</div>
-      <div id="cards4"></div>
-      <input id="input4" placeholder="Final count" />
-      <button onclick="check4()">Submit</button>
-      <div id="fb4"></div>
-    </div>
-
-    <div id="level5" class="hidden">
-      <div id="info5"></div>
-      <input id="input5" placeholder="True count" />
-      <button onclick="check5()">Submit</button>
-      <div id="fb5"></div>
-    </div>
-
-    <div id="level6" class="hidden">
-      <div id="info6"></div>
-      <input id="input6" placeholder="Action" />
-      <button onclick="check6()">Submit</button>
-      <div id="fb6"></div>
-    </div>
-
-    <div id="level7" class="hidden">
-      <div id="timer7">Time: 0s</div>
-      <div id="cards7"></div>
-      <input id="input7" placeholder="Final count" />
-      <button onclick="check7()">Submit</button>
-      <div id="fb7"></div>
-    </div>
-  </div>
-
+  </main>
   <script>
     const values = { '2':1,'3':1,'4':1,'5':1,'6':1,'7':0,'8':0,'9':0,'10':-1,'J':-1,'Q':-1,'K':-1,'A':-1 };
     const ranks = Object.keys(values);
+    const suits = ['♠','♥','♦','♣'];
+    let level, cards, running, decksLeft, scen, timerInt, startTime;
 
-    function randCard() { return ranks[Math.floor(Math.random()*ranks.length)]; }
-    function shuffle(arr) { for(let i=arr.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
+    function randCard(){ return ranks[Math.floor(Math.random()*ranks.length)]; }
+    function shuffle(a){ for(let i=a.length-1;i>0;i--){ let j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
 
     document.getElementById('startBtn').onclick = ()=>{
-      const lvl = document.getElementById('levelSelect').value;
-      for(let i=1;i<=7;i++) document.getElementById('level'+i).classList.add('hidden');
-      window['setup'+lvl]();
-      document.getElementById('level'+lvl).classList.remove('hidden');
+      level = +document.getElementById('levelSelect').value;
+      reset();
+      setupLevel();
     };
 
-    // Level 1
-    function setup1(){ next1(); }
-    function next1(){ window.card1 = randCard(); document.getElementById('card1').textContent=card1; document.getElementById('input1').value=''; document.getElementById('fb1').textContent=''; }
-    function check1(){ const ans=values[window.card1]; const inp=Number(document.getElementById('input1').value); document.getElementById('fb1').textContent = (inp===ans?'Correct':'Wrong'); next1(); }
+    document.getElementById('submitBtn').onclick = check;
 
-    // Level 2
-    function setup2(){ window.cards2=[]; let n=2+Math.floor(Math.random()*5); while(window.cards2.length<n) window.cards2.push(randCard()); document.getElementById('cards2').textContent=window.cards2.join(' '); document.getElementById('input2').value=''; document.getElementById('fb2').textContent=''; }
-    function check2(){ const sum=window.cards2.reduce((s,c)=>s+values[c],0); const inp=Number(document.getElementById('input2').value); document.getElementById('fb2').textContent=(inp===sum?'Correct':'Wrong'); setup2(); }
+    function reset(){ clearInterval(timerInt); document.getElementById('timer').classList.add('hidden'); document.getElementById('feedback').textContent=''; document.getElementById('input').value=''; }
 
-    // Level 3
-    function setup3(){ window.cards3=[]; let n=10+Math.floor(Math.random()*11); while(window.cards3.length<n) window.cards3.push(randCard()); document.getElementById('cards3').textContent=window.cards3.join(' '); document.getElementById('input3').value=''; document.getElementById('fb3').textContent=''; }
-    function check3(){ const sum=window.cards3.reduce((s,c)=>s+values[c],0); const inp=Number(document.getElementById('input3').value); document.getElementById('fb3').textContent=(inp===sum?'Correct':'Wrong'); setup3(); }
+    function setupLevel(){
+      const area = document.getElementById('card-area');
+      area.classList.remove('flash');
+      area.textContent='';
+      switch(level){
+        case 1:
+          cards = [randCard()];
+          display(cards);
+          break;
+        case 2:
+          cards = Array(2+Math.floor(Math.random()*5)).fill().map(randCard);
+          display(cards);
+          break;
+        case 3:
+          cards = Array(10+Math.floor(Math.random()*11)).fill().map(randCard);
+          display(cards);
+          break;
+        case 4:
+          startTimer();
+          cards = shuffle(ranks.flatMap(r=>suits.map(s=>r)));
+          display(cards);
+          break;
+        case 5:
+          running = Math.floor(Math.random()*41)-20;
+          decksLeft = (Math.random()*5+0.1).toFixed(1);
+          document.getElementById('feedback').textContent = `Running: ${running}, Decks: ${decksLeft}`;
+          break;
+        case 6:
+          scen = { player:16, dealer:10, index:0 };
+          const count = Math.floor(Math.random()*6)-2;
+          document.getElementById('feedback').textContent = `Count: ${count}, P:${scen.player}, D:${scen.dealer}`;
+          break;
+        case 7:
+          startTimer();
+          area.classList.add('flash');
+          cards = Array(10+Math.floor(Math.random()*11)).fill().map(randCard);
+          display(cards);
+          break;
+      }
+    }
 
-    // Level 4
-    function setup4(){ window.start4=Date.now(); const deck=ranks.flatMap(r=>['♠','♥','♦','♣'].map(s=>r)); shuffle(deck); window.cards4=deck; document.getElementById('cards4').textContent=deck.join(' '); document.getElementById('timer4').textContent='Time: 0s'; document.getElementById('input4').value=''; document.getElementById('fb4').textContent=''; window.timerInt4=setInterval(()=>{ let t=Math.floor((Date.now()-window.start4)/1000); document.getElementById('timer4').textContent='Time: '+t+'s'; },200); }
-    function check4(){ clearInterval(window.timerInt4); const sum=window.cards4.reduce((s,c)=>s+values[c],0); const inp=Number(document.getElementById('input4').value); document.getElementById('fb4').textContent=(inp===sum?'Correct':'Wrong'); }
+    function startTimer(){
+      startTime = Date.now();
+      const tEl = document.getElementById('timer');
+      tEl.classList.remove('hidden');
+      timerInt = setInterval(()=>{
+        tEl.textContent = `Time: ${Math.floor((Date.now()-startTime)/1000)}s`;
+      }, 200);
+    }
 
-    // Level 5
-    function setup5(){ window.running5=Math.floor(Math.random()*41)-20; window.decks5=(Math.random()*5+0.1).toFixed(1); document.getElementById('info5').textContent=`Running count: ${window.running5}, Decks left: ${window.decks5}`; document.getElementById('input5').value=''; document.getElementById('fb5').textContent=''; }
-    function check5(){ const trueCount=(window.running5/parseFloat(window.decks5)).toFixed(2); const inp=parseFloat(document.getElementById('input5').value).toFixed(2); document.getElementById('fb5').textContent=(inp===trueCount?'Correct':'Wrong'); }
+    function display(list){
+      const area = document.getElementById('card-area');
+      list.forEach(c=>{ const el = document.createElement('div'); el.textContent = c; area.append(el); });
+      document.getElementById('input').focus();
+    }
 
-    // Level 6
-    const basicIndex = [{player:16,dealer:10,index:0}]; // 0=hit,1=stand
-    function setup6(){ window.scen6 = basicIndex[Math.floor(Math.random()*basicIndex.length)]; document.getElementById('info6').textContent=`Count: ${Math.floor(Math.random()*6)-2}, Player: ${window.scen6.player}, Dealer: ${window.scen6.dealer}`; document.getElementById('input6').value=''; document.getElementById('fb6').textContent=''; }
-    function check6(){ const action=document.getElementById('input6').value.trim().toLowerCase(); const correct = window.scen6.index===1?'stand':'hit'; document.getElementById('fb6').textContent=(action===correct?'Correct':'Wrong'); }
-
-    // Level 7
-    function setup7(){ setup3(); window.start7=Date.now(); document.getElementById('cards7').id='flash'; window.timerInt7=setInterval(()=>{ let t=Math.floor((Date.now()-window.start7)/1000); document.getElementById('timer7').textContent='Time: '+t+'s'; },200); }
-    function check7(){ clearInterval(window.timerInt7); document.getElementById('fb7').textContent='Drill complete'; }
+    function check(){
+      clearInterval(timerInt);
+      let correct;
+      const ans = document.getElementById('input').value.trim();
+      switch(level){
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 7:
+          const sum = cards.reduce((s,c)=>s+values[c],0);
+          correct = ans==sum;
+          break;
+        case 5:
+          correct = Number(ans).toFixed(2)===(running/parseFloat(decksLeft)).toFixed(2);
+          break;
+        case 6:
+          correct = ans.toLowerCase() === (scen.index? 'stand':'hit');
+          break;
+      }
+      document.getElementById('feedback').textContent = correct? 'Correct':'Wrong';
+    }
   </script>
 </body>
 </html>
