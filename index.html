@@ -5,97 +5,83 @@
   <title>Card Counting Trainer</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg: #f4f4f9;
-      --card-bg: #ffffff;
-      --primary: #3b82f6;
-      --text: #1f2937;
-      --shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      margin: 0;
+      height: 100vh;
       display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    header {
-      background: var(--primary);
+      justify-content: center;
+      align-items: center;
+      background: #111;
       color: #fff;
-      text-align: center;
-      padding: 1rem;
-      box-shadow: var(--shadow);
+      font-family: 'Inter', sans-serif;
     }
     main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 0.5rem;
+      font-size: 2rem;
+      font-weight: 600;
     }
     .controls {
       display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
+      justify-content: center;
+      gap: 1rem;
+      margin: 1rem 0;
     }
-    select, input, button {
-      padding: 0.5rem 0.75rem;
-      border: 1px solid #d1d5db;
+    select, button, input {
+      background: transparent;
+      color: #fff;
+      border: 1px solid #fff;
       border-radius: 4px;
+      padding: 0.5rem 1rem;
       font-size: 1rem;
     }
-    button {
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      transition: background .2s;
-    }
-    button:hover {
-      background: #2563eb;
+    button:hover, select:hover, input:hover {
+      background: rgba(255,255,255,0.1);
     }
     #drill {
-      width: 100%;
-      max-width: 600px;
-      background: var(--card-bg);
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-      display: grid;
-      grid-template-rows: auto 1fr auto auto;
-      gap: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 1rem;
     }
     #card-area {
+      width: 320px;
+      min-height: 120px;
+      border: 2px dashed #fff;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
+      align-items: center;
       gap: 0.5rem;
-      font-size: 2rem;
+      font-size: 1.5rem;
+      padding: 1rem;
     }
-    .hidden { display: none; }
     .timer {
       font-size: 0.9rem;
-      text-align: right;
-      color: #6b7280;
+    }
+    .input-group {
+      display: flex;
+      gap: 0.5rem;
     }
     .feedback {
       min-height: 1.2rem;
-      font-weight: 600;
+      font-size: 1rem;
     }
     .flash {
       animation: flash 0.5s alternate infinite;
     }
     @keyframes flash {
-      from { background: var(--card-bg); }
-      to { background: #fde68a; }
+      from { background: #111; }
+      to { background: #333; }
     }
   </style>
 </head>
 <body>
-  <header><h1>Card Counting Trainer</h1></header>
   <main>
+    <h1>Card Counting Trainer</h1>
     <div class="controls">
       <select id="levelSelect">
         <option value="1">Level 1</option>
@@ -119,102 +105,18 @@
     </div>
   </main>
   <script>
-    const values = { '2':1,'3':1,'4':1,'5':1,'6':1,'7':0,'8':0,'9':0,'10':-1,'J':-1,'Q':-1,'K':-1,'A':-1 };
-    const ranks = Object.keys(values);
-    const suits = ['♠','♥','♦','♣'];
-    let level, cards, running, decksLeft, scen, timerInt, startTime;
-
-    function randCard(){ return ranks[Math.floor(Math.random()*ranks.length)]; }
-    function shuffle(a){ for(let i=a.length-1;i>0;i--){ let j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
-
-    document.getElementById('startBtn').onclick = ()=>{
-      level = +document.getElementById('levelSelect').value;
-      reset();
-      setupLevel();
-    };
-
-    document.getElementById('submitBtn').onclick = check;
-
-    function reset(){ clearInterval(timerInt); document.getElementById('timer').classList.add('hidden'); document.getElementById('feedback').textContent=''; document.getElementById('input').value=''; }
-
-    function setupLevel(){
-      const area = document.getElementById('card-area');
-      area.classList.remove('flash');
-      area.textContent='';
-      switch(level){
-        case 1:
-          cards = [randCard()];
-          display(cards);
-          break;
-        case 2:
-          cards = Array(2+Math.floor(Math.random()*5)).fill().map(randCard);
-          display(cards);
-          break;
-        case 3:
-          cards = Array(10+Math.floor(Math.random()*11)).fill().map(randCard);
-          display(cards);
-          break;
-        case 4:
-          startTimer();
-          cards = shuffle(ranks.flatMap(r=>suits.map(s=>r)));
-          display(cards);
-          break;
-        case 5:
-          running = Math.floor(Math.random()*41)-20;
-          decksLeft = (Math.random()*5+0.1).toFixed(1);
-          document.getElementById('feedback').textContent = `Running: ${running}, Decks: ${decksLeft}`;
-          break;
-        case 6:
-          scen = { player:16, dealer:10, index:0 };
-          const count = Math.floor(Math.random()*6)-2;
-          document.getElementById('feedback').textContent = `Count: ${count}, P:${scen.player}, D:${scen.dealer}`;
-          break;
-        case 7:
-          startTimer();
-          area.classList.add('flash');
-          cards = Array(10+Math.floor(Math.random()*11)).fill().map(randCard);
-          display(cards);
-          break;
-      }
-    }
-
-    function startTimer(){
-      startTime = Date.now();
-      const tEl = document.getElementById('timer');
-      tEl.classList.remove('hidden');
-      timerInt = setInterval(()=>{
-        tEl.textContent = `Time: ${Math.floor((Date.now()-startTime)/1000)}s`;
-      }, 200);
-    }
-
-    function display(list){
-      const area = document.getElementById('card-area');
-      list.forEach(c=>{ const el = document.createElement('div'); el.textContent = c; area.append(el); });
-      document.getElementById('input').focus();
-    }
-
-    function check(){
-      clearInterval(timerInt);
-      let correct;
-      const ans = document.getElementById('input').value.trim();
-      switch(level){
-        case 1:
-        case 2:
-        case 3:
-        case 4:
-        case 7:
-          const sum = cards.reduce((s,c)=>s+values[c],0);
-          correct = ans==sum;
-          break;
-        case 5:
-          correct = Number(ans).toFixed(2)===(running/parseFloat(decksLeft)).toFixed(2);
-          break;
-        case 6:
-          correct = ans.toLowerCase() === (scen.index? 'stand':'hit');
-          break;
-      }
-      document.getElementById('feedback').textContent = correct? 'Correct':'Wrong';
-    }
+    const values={ '2':1,'3':1,'4':1,'5':1,'6':1,'7':0,'8':0,'9':0,'10':-1,'J':-1,'Q':-1,'K':-1,'A':-1 };
+    const ranks=Object.keys(values), suits=['♠','♥','♦','♣'];
+    let level,cards,running,decksLeft,scen,timerInt,startTime;
+    function randCard(){return ranks[Math.floor(Math.random()*ranks.length)];}
+    function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+    document.getElementById('startBtn').onclick=()=>{level=+document.getElementById('levelSelect').value;reset();setupLevel();};
+    document.getElementById('submitBtn').onclick=check;
+    function reset(){clearInterval(timerInt);document.getElementById('timer').classList.add('hidden');document.getElementById('feedback').textContent='';document.getElementById('input').value='';document.getElementById('card-area').classList.remove('flash');}
+    function setupLevel(){const area=document.getElementById('card-area');area.textContent='';switch(level){case 1:cards=[randCard()];display(cards);break;case 2:cards=Array(2+Math.floor(Math.random()*5)).fill().map(randCard);display(cards);break;case 3:cards=Array(10+Math.floor(Math.random()*11)).fill().map(randCard);display(cards);break;case 4:startTimer();cards=shuffle(ranks.flatMap(r=>suits.map(s=>r)));display(cards);break;case 5:running=Math.floor(Math.random()*41)-20;decksLeft=(Math.random()*5+0.1).toFixed(1);document.getElementById('feedback').textContent=`Running: ${running}, Decks: ${decksLeft}`;break;case 6:scen={player:16,dealer:10,index:0};const cnt=Math.floor(Math.random()*6)-2;document.getElementById('feedback').textContent=`Count: ${cnt}, P:${scen.player}, D:${scen.dealer}`;break;case 7:startTimer();area.classList.add('flash');cards=Array(10+Math.floor(Math.random()*11)).fill().map(randCard);display(cards);break;}} 
+    function startTimer(){startTime=Date.now();const tEl=document.getElementById('timer');tEl.classList.remove('hidden');timerInt=setInterval(()=>{tEl.textContent=`Time: ${Math.floor((Date.now()-startTime)/1000)}s`;},200);}    
+    function display(list){const area=document.getElementById('card-area');list.forEach(c=>{const el=document.createElement('div');el.textContent=c;area.append(el);});document.getElementById('input').focus();}
+    function check(){clearInterval(timerInt);let correct;const ans=document.getElementById('input').value.trim();switch(level){case 1:case 2:case 3:case 4:case 7:const sum=cards.reduce((s,c)=>s+values[c],0);correct=ans==sum;break;case 5:correct=Number(ans).toFixed(2)===(running/parseFloat(decksLeft)).toFixed(2);break;case 6:correct=ans.toLowerCase()===(scen.index?'stand':'hit');break;}document.getElementById('feedback').textContent=correct?'Correct':'Wrong';}
   </script>
 </body>
 </html>
